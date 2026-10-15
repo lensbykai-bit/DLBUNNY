@@ -16,6 +16,8 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.ProgressBar
+import android.content.Intent
 import android.widget.Toast
 import android.webkit.CookieManager
 import android.webkit.URLUtil
@@ -29,12 +31,73 @@ class MainActivity : Activity() {
     private val handler = Handler(Looper.getMainLooper())
     private var minimumSplashElapsed = false
     private var pageReady = false
+    private var currentDownload: Long? = null
+    private lateinit var statusText: TextView
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val container = FrameLayout(this)
         browser = WebView(this)
-        container.addView(browser, FrameLayout.LayoutParams(-1, -1))
+        val appLayout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundColor(Color.rgb(9, 15, 34))
+        }
+        val toolbar = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(20, 10, 20, 10)
+            background = GradientDrawable(
+                GradientDrawable.Orientation.LEFT_RIGHT,
+                intArrayOf(Color.rgb(25, 23, 63), Color.rgb(48, 34, 93))
+            )
+        }
+        val title = TextView(this).apply {
+            text = "🐰  DL Bunny"
+            setTextColor(Color.WHITE)
+            textSize = 20f
+            typeface = Typeface.DEFAULT_BOLD
+        }
+        toolbar.addView(title, LinearLayout.LayoutParams(0, -2, 1f))
+        val downloads = TextView(this).apply {
+            text = "⬇ Downloads"
+            textSize = 14f
+            setTextColor(Color.WHITE)
+            setPadding(16, 12, 16, 12)
+            background = GradientDrawable(
+                GradientDrawable.Orientation.LEFT_RIGHT,
+                intArrayOf(Color.rgb(230, 65, 159), Color.rgb(94, 100, 244))
+            ).apply { cornerRadius = 22f }
+            setOnClickListener {
+                try {
+                    startActivity(Intent(DownloadManager.ACTION_VIEW_DOWNLOADS))
+                } catch (e: Exception) {
+                    Toast.makeText(this@MainActivity, "Downloads unavailable", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        toolbar.addView(downloads)
+        appLayout.addView(toolbar)
+        appLayout.addView(browser, LinearLayout.LayoutParams(-1, 0, 1f))
+        val downloadPanel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(20, 10, 20, 12)
+            setBackgroundColor(Color.rgb(19, 23, 52))
+        }
+        statusText = TextView(this).apply {
+            text = "Ready to download"
+            textSize = 13f
+            setTextColor(Color.rgb(225, 224, 255))
+        }
+        progressBar = ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply {
+            max = 100
+            progress = 0
+            progressTintList = android.content.res.ColorStateList.valueOf(Color.rgb(244, 88, 179))
+        }
+        downloadPanel.addView(statusText)
+        downloadPanel.addView(progressBar, LinearLayout.LayoutParams(-1, 12))
+        appLayout.addView(downloadPanel)
+        container.addView(appLayout, FrameLayout.LayoutParams(-1, -1))
 
         splash = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -118,8 +181,11 @@ class MainActivity : Activity() {
                 request.setTitle(name)
                 request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
                 request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, name)
-                (getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
-                Toast.makeText(this, "Download started", Toast.LENGTH_SHORT).show()
+                val manager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                currentDownload = manager.enqueue(request)
+                statusText.text = "Downloading: $name"
+                progressBar.progress = 0
+                updateDownloadProgress()
             } catch (e: Exception) {
                 Toast.makeText(this, "Download unavailable: ${e.message}", Toast.LENGTH_LONG).show()
             }
@@ -130,6 +196,40 @@ class MainActivity : Activity() {
         }, 1600)
         handler.postDelayed({ if (!isFinishing) splash.visibility = View.GONE }, 8000)
         browser.loadUrl("https://dlbunny.com/")
+    }
+
+    private fun updateDownloadProgress() {
+        val id = currentDownload ?: return
+        val manager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        val cursor = manager.query(DownloadManager.Query().setFilterById(id))
+        cursor.use {
+            if (it.moveToFirst()) {
+                val state = it.getInt(it.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
+                val total = it.getLong(it.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
+                val done = it.getLong(it.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
+                if (total > 0) {
+                    val percent = (done * 100 / total).toInt().coerceIn(0, 100)
+                    progressBar.progress = percent
+                    statusText.text = "Downloading... $percent%"
+                } else {
+                    statusText.text = "Downloading..."
+                }
+                when (state) {
+                    DownloadManager.STATUS_SUCCESSFUL -> {
+                        statusText.text = "✓ Download complete — open Downloads"
+                        progressBar.progress = 100
+                        currentDownload = null
+                    }
+                    DownloadManager.STATUS_FAILED -> {
+                        statusText.text = "Download failed — please retry"
+                        currentDownload = null
+                    }
+                }
+            } else {
+                currentDownload = null
+            }
+        }
+        if (currentDownload != null) handler.postDelayed({ updateDownloadProgress() }, 900)
     }
 
     private fun dismissSplashWhenReady() {
