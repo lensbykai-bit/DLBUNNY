@@ -207,6 +207,26 @@ class MainActivity : Activity() {
         // Website changes may require adjusting these selectors.
         val css = """
             :root { color-scheme: dark !important; }
+            /* Hide clearly marked advertisement containers without touching
+               captcha, login, consent, or download controls. */
+            ins.adsbygoogle,
+            .adsbygoogle,
+            [data-ad-client],
+            [data-ad-slot],
+            [id^="google_ads_iframe"],
+            iframe[src*="doubleclick.net"],
+            iframe[src*="googlesyndication.com"],
+            .advertisement,
+            .advertisement-container,
+            .ad-banner,
+            .ad-container,
+            .ads-container,
+            #ad-banner,
+            #ad-container {
+                display: none !important;
+                visibility: hidden !important;
+                max-height: 0 !important;
+            }
             html, body, main, section, article, header, footer,
             .container, .wrapper, .content, .card, .modal-content {
                 background-color: #0c1229 !important;
