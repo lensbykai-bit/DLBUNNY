@@ -41,31 +41,59 @@ class MainActivity : Activity() {
             gravity = Gravity.CENTER
             background = GradientDrawable(
                 GradientDrawable.Orientation.TL_BR,
-                intArrayOf(Color.rgb(13, 18, 36), Color.rgb(31, 18, 55))
+                intArrayOf(Color.rgb(8, 14, 33), Color.rgb(37, 24, 80), Color.rgb(13, 24, 57))
             )
+        }
+        val density = resources.displayMetrics.density
+        fun dp(value: Int): Int = (value * density).toInt()
+        val logoCard = FrameLayout(this).apply {
+            elevation = dp(20).toFloat()
+            background = GradientDrawable(
+                GradientDrawable.Orientation.TL_BR,
+                intArrayOf(Color.rgb(255, 93, 189), Color.rgb(119, 86, 255), Color.rgb(48, 181, 255))
+            ).apply {
+                cornerRadius = dp(34).toFloat()
+                setStroke(dp(2), Color.rgb(200, 198, 255))
+            }
+            rotation = -7f
         }
         val emblem = TextView(this).apply {
             text = "🐰"
-            textSize = 62f
+            textSize = 67f
             gravity = Gravity.CENTER
+            setShadowLayer(dp(9).toFloat(), 0f, dp(5).toFloat(), Color.rgb(54, 31, 100))
         }
+        logoCard.addView(emblem, FrameLayout.LayoutParams(-1, -1))
+        splash.addView(logoCard, LinearLayout.LayoutParams(dp(146), dp(146)).apply {
+            bottomMargin = dp(30)
+        })
         val brand = TextView(this).apply {
             text = "DL Bunny"
-            textSize = 34f
+            textSize = 39f
             setTextColor(Color.WHITE)
-            typeface = Typeface.create("sans-serif", Typeface.BOLD)
+            typeface = Typeface.create("sans-serif-black", Typeface.BOLD)
             gravity = Gravity.CENTER
+            setShadowLayer(dp(8).toFloat(), 0f, dp(5).toFloat(), Color.rgb(156, 75, 226))
         }
         val tagline = TextView(this).apply {
-            text = "PERSONAL DOWNLOADER"
-            textSize = 12f
-            letterSpacing = 0.18f
-            setTextColor(Color.rgb(176, 180, 210))
+            text = "YOUR PERSONAL DOWNLOADER"
+            textSize = 11f
+            letterSpacing = 0.2f
+            setTextColor(Color.rgb(195, 202, 243))
             gravity = Gravity.CENTER
         }
-        splash.addView(emblem)
+        val loading = TextView(this).apply {
+            text = "●  ●  ●"
+            textSize = 16f
+            letterSpacing = 0.25f
+            setTextColor(Color.rgb(255, 123, 202))
+            gravity = Gravity.CENTER
+        }
         splash.addView(brand)
         splash.addView(tagline)
+        splash.addView(loading, LinearLayout.LayoutParams(-1, dp(55)).apply {
+            topMargin = dp(28)
+        })
         container.addView(splash, FrameLayout.LayoutParams(-1, -1))
         setContentView(container)
 
