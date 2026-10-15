@@ -37,6 +37,9 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.statusBarColor = Color.rgb(13, 18, 42)
+        window.navigationBarColor = Color.rgb(13, 18, 42)
+        window.decorView.systemUiVisibility = 0
         val container = FrameLayout(this)
         browser = WebView(this)
         val appLayout = LinearLayout(this).apply {
@@ -165,6 +168,7 @@ class MainActivity : Activity() {
         browser.webChromeClient = WebChromeClient()
         browser.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
+                applyPremiumTheme()
                 pageReady = true
                 dismissSplashWhenReady()
             }
@@ -196,6 +200,45 @@ class MainActivity : Activity() {
         }, 1600)
         handler.postDelayed({ if (!isFinishing) splash.visibility = View.GONE }, 8000)
         browser.loadUrl("https://dlbunny.com/")
+    }
+
+    private fun applyPremiumTheme() {
+        // Styling applies only to the page displayed in this WebView.
+        // Website changes may require adjusting these selectors.
+        val css = """
+            :root { color-scheme: dark !important; }
+            html, body, main, section, article, header, footer,
+            .container, .wrapper, .content, .card, .modal-content {
+                background-color: #0c1229 !important;
+                color: #edf1ff !important;
+            }
+            h1, h2, h3, h4, h5, h6, p, label, span, strong, small, li {
+                color: #edf1ff !important;
+            }
+            a { color: #82b8ff !important; }
+            input, textarea, select {
+                background: #192244 !important;
+                color: #ffffff !important;
+                border: 1px solid #805de4 !important;
+                border-radius: 14px !important;
+                box-shadow: 0 4px 15px rgba(0,0,0,.18) !important;
+            }
+            input::placeholder, textarea::placeholder { color: #a8b4d6 !important; }
+            button, input[type=submit], .btn, [role=button] {
+                border-radius: 14px !important;
+                box-shadow: 0 5px 15px rgba(90,67,188,.23) !important;
+            }
+            button[type=submit], input[type=submit], .btn-primary {
+                background: linear-gradient(110deg,#fa62b4,#855af4,#4aaeff) !important;
+                color: white !important;
+                border: 0 !important;
+            }
+        """.trimIndent()
+        val js = "(function(){if(document.getElementById('dlbunny-personal-theme'))return;" +
+            "var s=document.createElement('style');s.id='dlbunny-personal-theme';" +
+            "s.textContent=" + org.json.JSONObject.quote(css) + ";" +
+            "(document.head||document.documentElement).appendChild(s);})();"
+        browser.evaluateJavascript(js, null)
     }
 
     private fun updateDownloadProgress() {
