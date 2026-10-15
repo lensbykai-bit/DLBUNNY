@@ -1,0 +1,32 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>USA IP Checker</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,Roboto,sans-serif}*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 10% 0%,#261849 0%,transparent 50%),radial-gradient(ellipse at 100% 38%,#123d62 0%,transparent 48%),#0c0d1d;color:#f7f8ff;padding:28px 18px 38px}
+main{width:100%;max-width:500px;margin:0 auto}header{display:flex;align-items:center;gap:13px;margin-bottom:28px}.logo{width:56px;height:56px;display:grid;place-items:center;border-radius:19px;background:linear-gradient(135deg,#fd4bb0,#4d7dfd);font-size:30px;box-shadow:0 12px 38px #9e3eec45}
+h1{font-size:23px;margin:0;font-weight:800;letter-spacing:-.6px}.subtitle{font-size:13px;color:#9fa9d1;margin-top:4px}
+.card{border-radius:26px;padding:25px 21px;background:linear-gradient(145deg,#252646df,#15162edc);border:1px solid #ffffff24;box-shadow:0 20px 38px #0004;margin-bottom:20px}
+.hero{text-align:center;padding:30px 21px}.flag{font-size:70px;filter:drop-shadow(0 12px 15px #0007)}h2{font-size:23px;margin:10px 0 3px}.status{margin:13px auto;max-width:max-content;padding:10px 16px;border-radius:100px;background:#343651;color:#bbc1dd;font-weight:800;font-size:12px;letter-spacing:.9px}.status.good{background:#0b493e;color:#7ff3c7}.status.bad{background:#512c37;color:#ffc8cd}
+.ip{font-size:26px;font-weight:800;letter-spacing:.3px;overflow-wrap:anywhere;padding-top:10px}.small{color:#9ba6ca;font-size:12px;line-height:1.55}
+.lines{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:26px}.cell{padding:14px;border-radius:16px;background:#ffffff09;border:1px solid #ffffff11;text-align:left;overflow-wrap:anywhere}.label{font-size:11px;color:#a8b2d2;text-transform:uppercase;letter-spacing:.9px}.value{font-size:14px;font-weight:750;margin-top:6px}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:57px;border:0;border-radius:17px;font-size:15px;color:#fff;font-weight:800;letter-spacing:.3px;margin-bottom:13px;cursor:pointer}.primary{background:linear-gradient(100deg,#f546ae,#5b7dff);box-shadow:0 12px 27px #a246df38}.secondary{background:#292947;border:1px solid #ffffff22}.outline{background:transparent;border:1px solid #69739975}.btn:active{transform:translateY(2px)}.btn[disabled]{opacity:.55}.tip{font-size:12px;line-height:1.65;color:#acb7d4;padding:1px 7px}.accent{color:#e79be1}.foot{text-align:center;color:#8993b5;font-size:11px;margin-top:26px}
+</style></head><body><main>
+<header><div class="logo">🌐</div><div><h1>USA IP Checker</h1><div class="subtitle">Private IP status &amp; connection tools</div></div></header>
+<section class="card hero"><div class="flag">🇺🇸</div><h2>United States IP</h2><div id="status" class="status">CHECKING IP…</div><div class="small">Your public IP address</div><div class="ip" id="ip">—</div>
+<div class="lines"><div class="cell"><div class="label">Country</div><div class="value" id="country">—</div></div><div class="cell"><div class="label">City</div><div class="value" id="city">—</div></div><div class="cell" style="grid-column:span 2"><div class="label">Network / ISP</div><div class="value" id="isp">—</div></div></div></section>
+<button id="check" class="btn primary" onclick="check()">↻ &nbsp; CHECK MY IP NOW</button>
+<button class="btn secondary" onclick="Native.openVpnSettings()">⚙ &nbsp; OPEN VPN SETTINGS</button>
+<button class="btn outline" onclick="Native.openTikTok()">♪ &nbsp; OPEN TIKTOK</button>
+<button class="btn outline" onclick="Native.copyIp(document.getElementById('ip').textContent)">▣ &nbsp; COPY IP ADDRESS</button>
+<div class="tip"><span class="accent">Important:</span> This app only checks the approximate location of your public IP. It does not change your IP, provide a VPN, clone TikTok, or change your TikTok account's country. A VPN must be separately configured by you. Other apps may use a different route or detect your real region.</div><div class="foot">USA IP Checker • No ads • No location permission</div>
+</main><script>
+function put(id,value){document.getElementById(id).textContent=value||'—'}
+function check(){let s=document.getElementById('status');s.className='status';s.textContent='CHECKING IP…';document.getElementById('check').disabled=true;try{Native.refreshIp()}catch(e){receiveLookup({ok:false,error:'Android bridge unavailable'})}}
+window.receiveLookup=function(r){
+document.getElementById('check').disabled=false;
+let s=document.getElementById('status');s.className='status';
+if(!r||!r.ok){s.textContent='CHECK FAILED';s.classList.add('bad');put('ip','—');put('country','—');put('city','—');put('isp','—');return}
+put('ip',r.ip);put('country',r.country);put('city',r.city);put('isp',r.isp);
+if(r.countryCode==='US'){s.classList.add('good');s.textContent='✓ USA IP DETECTED'}else{s.classList.add('bad');s.textContent='NOT USA IP'}
+}
+setTimeout(check,350);
+</script></body></html>
